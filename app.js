@@ -4,30 +4,32 @@ const readline = require('readline');
 let inputFilePath = './people.csv',
     inputStream = fs.createReadStream(inputFilePath),
     rl = readline.createInterface(inputStream);
-var people = [];
+
+var people = []; //array of parsed lines from csv
+var fullWeight = 0, fullHeight = 0, male = 0, female = 0; // variables of info
+var names = {}, country = {}; // collects number for names and countries
 rl
   .on('line' , (line)=>{
-    people.push(line.split(';'));
+    people.push(line.split(';')); // splits lines and pushes to people array
   })
   .on('close', () => {
-    var fullWeight = 0, fullHeight = 0, male = 0, female = 0;
-    var names = {}, country = {};
-    people.forEach(function (elem){
-        if(elem == people[0]){
-          return;
-        }
-        fullHeight += parseInt(elem[7]);
-        fullWeight += parseInt(elem[8]);
-        names[elem[1]] = names[elem[1]] == undefined ? 1 : ++names[elem[1]];
-        male = (elem[4] == 'Male') ? ++male : male;
-        female = (elem[4] == 'Male') ? ++female : female;
-        country[elem[6]] = (country[elem[6]] == undefined) ? 1 : ++country[elem[6]];
-      });
-
-      output(male, female, fullHeight, fullWeight, people, names, country);
+    people.forEach(counter);
+    output(male, female, fullHeight, fullWeight, people, names, country);
 });
 
-function pop(names, country){
+function counter(elem){ // collests information for variables of info
+    if(elem == people[0]){
+      return;
+    }
+    fullHeight += parseInt(elem[7]);
+    fullWeight += parseInt(elem[8]);
+    names[elem[1]] = names[elem[1]] == undefined ? 1 : ++names[elem[1]];
+    male = (elem[4] == 'Male') ? ++male : male;
+    female = (elem[4] == 'Male') ? ++female : female;
+    country[elem[6]] = (country[elem[6]] == undefined) ? 1 : ++country[elem[6]];
+  }
+
+function pop(names, country){ // returns object with most popular name and country
   var maxName = 0, maxCountry = 0;
   var popName, popCountry;
 
@@ -44,13 +46,13 @@ function pop(names, country){
       popCountry = key;
     }
   }
-  return {
+  return { // object with most popular name and country
     'name': popName,
     'country': popCountry
   }
 }
 
-function logFullInfo(elem){
+function logFullInfo(elem){ // logs full info about person
   console.log(
     ' ID: ' + elem[0] + '\n',
     'Name: ' + elem[1] + '\n',
@@ -63,8 +65,10 @@ function logFullInfo(elem){
     'Weight: ' + elem[8] + '\n'
   )
 }
-function output(male, female, fullHeight, fullWeight, people, names, country){
+
+function output(male, female, fullHeight, fullWeight, people, names, country){ // makes output with info
   popResult = pop(names, country);
+  console.log();
   console.log('Most popular name: ' + popResult.name);
   console.log('Male: ' + male, ' Female: ' + female);
   console.log('Average weight: ' + (fullWeight / people.length));
